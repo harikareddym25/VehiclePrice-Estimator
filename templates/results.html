@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Search Results</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/results.css') }}">
+</head>
+
+<body>
+    <!-- Check if there are no records -->
+    {% if no_records %}
+        <!-- Display message for no records found -->
+        <h1> Estimated Market Price </h1>
+        <h3 style="text-align: center;"> No Records Found! </h3>
+    {% else %}
+        <!-- Display estimated market price details -->
+        <h1>Estimated Market Price of {{year}} {{make}} {{model}}</h1>
+        <!-- Table for displaying estimated market price -->
+        <table>
+            <thead>
+                <tr>
+                    <th>Estimated Market Price</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Display the estimated market price -->
+                <tr>
+                    <td>${{"{:,}".format(predicted_price|int|round(-2)) }}</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <!-- Table for displaying sample listings used for computation -->
+        <table>
+            <thead>
+                <!-- Heading for sample listings -->
+                <h4>Here are some sample listings that were used to compute the market value </h4>
+                <!-- Columns for the sample listings table -->
+                <tr>
+                    <th>Vehicle</th>
+                    <th>Price</th>
+                    <th>Mileage</th>
+                    <th>Location</th>
+                </tr>
+            </thead>
+            <tbody id="resultsTableBody">
+                <!-- Check if there is data to display -->
+                {% if data %}
+                    <!-- Loop through the data and display up to 100 sample listings -->
+                    {% for item in data if item.trim|is_not_empty and item.listing_mileage|is_not_empty and item.listing_price|is_not_empty and item.dealer_state|is_not_empty and item.dealer_zip|is_not_empty %}
+                        {% if loop.index <= 100 %}
+                        <!-- Display each sample listing -->
+                        <tr>
+                            <td>{{ item.year }} {{ item.make }} {{ item.model }} {{ item.trim }}</td>
+                            <td>${{ "{:,}".format(item.listing_price|int) }}</td>
+                            <td>{{ "{:,}".format(item.listing_mileage|int) }} miles</td>
+                            <td>{{ item.dealer_city }}, {{ item.dealer_state}}</td>
+                        </tr>
+                        {% endif %}
+                    {% endfor %}
+                {% else %}
+                    <!-- Display message if no records found -->
+                    <p>No records found.</p>
+                {% endif %}
+            </tbody>
+        </table>
+    {% endif %}
+</body>
+</html>
