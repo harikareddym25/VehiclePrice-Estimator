@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vehicle Price Estimator</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/index.css') }}">
+</head>
+
+<body>
+    <div>
+        <h1>Vehicle Price Estimator</h1>
+        <!-- Form for user input -->
+        <form action="/search" method="post" id="search_details">
+            <!-- Year selection dropdown -->
+            <div>
+                <label for="year">Year:</label>
+                <select id="year" name="year" required>
+                    {% for year_option in year_options|sort %}
+                        <option value="{{ year_option }}">{{ year_option }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <!-- Make input field with dynamic suggestions -->
+            <div>
+                <label for="make">Make:</label>
+                <input type="text" id="make" name="make" list="makeSuggestions" required>
+                <datalist id="makeSuggestions">
+                    {% for make in makes|sort %}
+                        <option value="{{ make }}">
+                    {% endfor %}
+                </datalist>
+            </div>
+            <!-- Model input field with dynamic suggestions -->
+            <div>
+                <label for="model">Model:</label>
+                <input type="text" id="model" name="model" list="modelSuggestions" required>
+                <datalist id="modelSuggestions">
+                    <!-- Suggestions will be dynamically populated via JavaScript -->
+                </datalist>
+            </div>
+            <!-- Mileage input field -->
+            <div>
+                <label for="mileage">Mileage:</label>
+                <input type="text" id="mileage" name="mileage" >
+            </div>
+            <!-- Search button -->
+            <div>
+                <button type="submit">Search</button>
+            </div>
+        </form>
+    </div>
+
+    <!-- JavaScript for dynamic suggestions -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            // Event listener for make input field
+            var makeInput = document.getElementById('make');
+            var makeSuggestions = document.getElementById('makeSuggestions');
+            makeInput.addEventListener('input', function() {
+                var input = makeInput.value.toLowerCase();
+                var options = makeSuggestions.querySelectorAll('option');
+                options.forEach(function(option) {
+                    option.style.display = option.value.toLowerCase().startsWith(input) ? 'block' : 'none';
+                });
+            });
+
+            // Event listener for model input field
+            var modelInput = document.getElementById('model');
+            var modelSuggestions = document.getElementById('modelSuggestions');
+            modelInput.addEventListener('input', function() {
+                var input = modelInput.value.toLowerCase();
+                modelSuggestions.innerHTML = '';
+
+                // Fetch model suggestions from a text file
+                fetch('static/txtfiles/models.txt')
+                    .then(response => response.text())
+                    .then(data => {
+                        // Parse each line as JSON and dynamically populate suggestions
+                        data.split('\n').forEach(line => {
+                            if (line.trim() !== '') {
+                                var model = JSON.parse(line);
+                                var optionElement = document.createElement('option');
+                                optionElement.value = model.model;
+                                modelSuggestions.appendChild(optionElement);
+                            }
+                        });
+                    })
+                    .catch(error => {
+                        console.error('Error fetching model suggestions:', error);
+                    });
+                });
+            });
+    </script>
+</body>
+</html>
